@@ -3,13 +3,13 @@ There are 7 primary service intents. Each intent maps to exactly one Sub-Agent. 
 
 |Intent Name| Frequency| Sub-Agent| Training Phrases| NLU Target|
 |-----------|----------|----------|-----------------|-----------|
-|service.missed_pickup| ~35% of calls| Missed Pickup Agent 20+ phrases| > 90%|
-|service.reschedule| ~25% of calls| Reschedule Agent 18+ phrases| > 88%|
-|service.check_status| ~15% of calls| Service Status Agent 15+ phrases| > 85%|
-|service.route_delay| ~10% of calls| Route Delay Agent 15+ phrases| > 85%|
-|service.blockage| ~8% of calls| Container Blockage Agent 15+ phrases| > 85%|
-|service.complaint| ~5% of calls| Complaint Agent 15+ phrases| > 85%|
-|service.next_pickup| ~2% of calls| Service Status Agent 12+ phrases| > 85%|
+|service.missed_pickup| ~35% of calls| Missed Pickup Agent| 20+ phrases| > 90%|
+|service.reschedule| ~25% of calls| Reschedule Agent| 18+ phrases| > 88%|
+|service.check_status| ~15% of calls| Service Status Agent| 15+ phrases| > 85%|
+|service.route_delay| ~10% of calls| Route Delay Agent| 15+ phrases| > 85%|
+|service.blockage| ~8% of calls| Container Blockage Agent| 15+ phrases| > 85%|
+|service.complaint| ~5% of calls| Complaint Agent| 15+ phrases| > 85%|
+|service.next_pickup| ~2% of calls| Service Status Agent| 12+ phrases| > 85%|
 
 ### Intent: service.missed_pickup
 #### Training Phrases
