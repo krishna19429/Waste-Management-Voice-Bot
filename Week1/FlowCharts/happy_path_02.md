@@ -1,5 +1,11 @@
 ## Happy Path 02 (Rescheduling)
 ```mermaid
+%%{init: {'theme':'base','themeVariables':{
+'primaryColor':'#E8F5E9',
+'primaryBorderColor':'#1B5E20',
+'primaryTextColor':'#000000',
+'lineColor':'#000000'
+}}}%%
 flowchart TD
 
     A([Citizen Starts Conversation])
