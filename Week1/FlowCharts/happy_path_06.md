@@ -1,4 +1,4 @@
-## Happy Path 05 (Blockage)
+## Happy Path 05 (Complaint)
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{
 'primaryColor':'#E8F5E9',
@@ -9,41 +9,48 @@
 
 flowchart TD
 
-    A([Collection Crew Reports Blockage])
-    --> B[Root Agent Receives Report]
+    A([Citizen Starts Conversation])
+    --> B[Root Agent Greets Citizen]
 
-    B --> C[Identify Intent = Route Blockage]
+    B --> C[Collect Citizen ID / Registered Phone Number]
 
-    C --> D[Route to Blockage Management Agent]
+    C --> D{Citizen Validated?}
 
-    D --> E[Collect Blockage Location]
+    D -->|Yes| E[Identify Intent]
+    D -->|No| F[Retry Authentication]
 
-    E --> F[Collect Blockage Type]
+    E --> G[Intent = Register Complaint]
 
-    F --> G[Capture Additional Details]
+    G --> H[Route to Complaint Management Agent]
 
-    G --> H[Validate Information]
+    H --> I[Collect Complaint Category]
 
-    H --> I[Generate Incident Summary]
+    I --> J[Collect Complaint Description]
 
-    I --> J{Crew Confirms?}
+    J --> K[Collect Location Details]
 
-    J -->|Yes| K[Create Blockage Incident]
+    K --> L[Validate Information]
 
-    J -->|Modify Details| E
+    L --> M[Generate Complaint Summary]
 
-    K --> L[Notify Operations Team]
+    M --> N{Citizen Confirms?}
 
-    L --> M[Generate Incident Reference Number]
+    N -->|Yes| O[Create Complaint Ticket]
 
-    M --> N[Provide Alternative Route Guidance]
+    N -->|Modify Details| I
 
-    N --> O[Confirm Incident Logged]
+    O --> P[Submit Complaint]
 
-    O --> P{Any Other Issue?}
+    P --> Q[Generate Complaint Reference Number]
 
-    P -->|Yes| C
+    Q --> R[Provide Expected Resolution Time]
 
-    P -->|No| Q([End Session])
+    R --> S[Send Confirmation]
+
+    S --> T{Need Additional Assistance?}
+
+    T -->|Yes| U[Route Back to Root Agent]
+
+    T -->|No| V([End Session])
 
 ```
