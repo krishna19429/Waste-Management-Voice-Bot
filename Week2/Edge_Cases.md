@@ -1,112 +1,80 @@
-### Overview 
-Edge cases are all the scenarios that deviate from the happy path. Handling these correctly is the difference between a 70% containment rate and a 90% containment rate. Week 2 of the sprint focuses primarily on implementing and testing these scenarios. 
+## This document outlines edge cases and exception handling scenarios for our voice agent.
 
-### Authentication Failures
-|Scenario |Trigger |Bot Behaviour |System Action |
-|---------|--------|--------------|--------------|
-|Wrong address |Address does not match phone in DB |Inform caller: 'The address does not match. Please try again with your full service address including area and city.' |System ActionIncrement auth_fail_count. Re-collect address |
-|Phone not found |Phone number not in mock DB |Inform caller: 'I could not find an account with that number. Please check and try again.' |Increment auth_fail_count. Re-collect phone + address |
-|Third failure |auth_fail_count reaches 3 |Inform: 'I was unable to verify your account. Let me connect you with an agent.' |Transfer to Escalation Agent. Session summary passed. |
-|Caller hangs up during auth |No input during phone/address collection |Three-strike no-input handler fires: 'I have not heard a response. Thank you for calling. Goodbye.' |End session gracefully |
+### 1. Invalid Address
+#### Scenario :
+The user provide an address that does not exist, cannot be validated, or is outside the service area.
+Callback : validateAddress()
 
+#### Agent Response:
+"We were unable to verify the address provided. Please confirm your service address."
 
-### API Timeout and Failure 
-|Scenario |Agent Affected  |Bot Behaviour |System Action |
-|---------|--------|--------------|--------------|
-|validateAddress times out |Authentication Agent |'I am experiencing a technical issue. Please hold while I connect you.'  |Escalate immediately — cannot authenticate without API  |
-|reportMissedPickup fails |Missed Pickup Agent  |'I am sorry, I was unable to log your complaint right now. Let me connect you with an agent who can help.'  |Retry once, then escalate with reason=api_failure  |
-|reschedulePickup fails |Reschedule Agent |'I was unable to update your schedule. Let me connect you with our team.'  |Escalate — do not auto-retry reschedule (risk of double booking)  |
-|createServiceRequest fails (complaint) |Complaint Agent  |'I sincerely apologize. Let me connect you immediately with a senior agent.'  |Escalate immediately — never retry on frustrated caller |
+#### Resolution:
 
+|Condition | Action |
+|----------|--------|
+Address Valid | Continue Registration|
+|Address Invalid|  Request Address Again|
+|3 Failed Attempts | Transfer to Human Agent|
 
-### No-Match and No-Input
-|Strike |No-Input Response  |No-Match Response |
-|---------|--------|--------------|
-|Strike 1  |'I did not hear anything. Could you please repeat that?' |'I did not quite catch that. I can help with missed pickups, rescheduling, service status, route delays, container issues, and complaints.'  |
-|Strike 2 |'Are you still there? Please say what you need help with — for example: missed pickup, or service status.'  |'Could you say one of the following: missed pickup, reschedule, check status, or complaint?' |
-|Strike 3 |'I have not heard a response. Thank you for calling Waste Management Services. Goodbye.' |'I am having difficulty understanding your request. Would you like me to connect you with a live agent?'|
+### 2. Authentication Failure
+#### Scenario:
+Customer authentication fails due to incorrect credentials.
+Callback: authenticateCustomer()
 
-### ### Overview 
-Edge cases are all the scenarios that deviate from the happy path. Handling these correctly is the difference between a 70% containment rate and a 90% containment rate. Week 2 of the sprint focuses primarily on implementing and testing these scenarios. 
+#### Agent Response:
+"I could not verify your account. Please try again."
 
-### Authentication Failures
-|Scenario |Trigger |Bot Behaviour |System Action |
-|---------|--------|--------------|--------------|
-|Wrong address |Address does not match phone in DB |Inform caller: 'The address does not match. Please try again with your full service address including area and city.' |System ActionIncrement auth_fail_count. Re-collect address |
-|Phone not found |Phone number not in mock DB |Inform caller: 'I could not find an account with that number. Please check and try again.' |Increment auth_fail_count. Re-collect phone + address |
-|Third failure |auth_fail_count reaches 3 |Inform: 'I was unable to verify your account. Let me connect you with an agent.' |Transfer to Escalation Agent. Session summary passed. |
-|Caller hangs up during auth |No input during phone/address collection |Three-strike no-input handler fires: 'I have not heard a response. Thank you for calling. Goodbye.' |End session gracefully |
+#### Resolution:
+|Condition|Action|
+|---------|------|
+Authentication Success| Continue Flow|
+|Authenticate Failure | Retry|
+|3 Consecutive Failures| Escalate to Human Agent|
 
+### 3. Missing Service Date
+#### Scenario
+Customer does not provide a service date.
 
-### API Timeout and Failure 
-|Scenario |Agent Affected  |Bot Behaviour |System Action |
-|---------|--------|--------------|--------------|
-|validateAddress times out |Authentication Agent |'I am experiencing a technical issue. Please hold while I connect you.'  |Escalate immediately — cannot authenticate without API  |
-|reportMissedPickup fails |Missed Pickup Agent  |'I am sorry, I was unable to log your complaint right now. Let me connect you with an agent who can help.'  |Retry once, then escalate with reason=api_failure  |
-|reschedulePickup fails |Reschedule Agent |'I was unable to update your schedule. Let me connect you with our team.'  |Escalate — do not auto-retry reschedule (risk of double booking)  |
-|createServiceRequest fails (complaint) |Complaint Agent  |'I sincerely apologize. Let me connect you immediately with a senior agent.'  |Escalate immediately — never retry on frustrated caller |
+#### Agent Response 
+"Could you please provide the pickup service date you are referring to?"
 
+#### Resolution
+|Condition	|Action|
+|---------|-----------|
+|Date Provided|	Validate Date|
+|Date Missing|	Reprompt|
+|Multiple Failed Attempts|Human Agent|
 
-### No-Match and No-Input
-|Strike |No-Input Response  |No-Match Response |
-|---------|--------|--------------|
-|Strike 1  |'I did not hear anything. Could you please repeat that?' |'I did not quite catch that. I can help with missed pickups, rescheduling, service status, route delays, container issues, and complaints.'  |
-|Strike 2 |'Are you still there? Please say what you need help with — for example: missed pickup, or service status.'  |'Could you say one of the following: missed pickup, reschedule, check status, or complaint?' |
-|Strike 3 |'I have not heard a response. Thank you for calling Waste Management Services. Goodbye.' |'I am having difficulty understanding your request. Would you like me to connect you with a live agent?'|
+#### Route Delay API Failure
+#### Scenario:
+The route management service is unavailable.
 
-### Overview 
-Edge cases are all the scenarios that deviate from the happy path. Handling these correctly is the difference between a 70% containment rate and a 90% containment rate. Week 2 of the sprint focuses primarily on implementing and testing these scenarios. 
+Callback: checkRouteDelay()
+#### Failure Types
+- API timeout
+- HTTP 500
+- Service unavailable
+- Network failure
+- Expected Behavior
+- Retry API call.
+- Use cached data if available.
+- Continue workflow with limited information.
 
-### Authentication Failures
-|Scenario |Trigger |Bot Behaviour |System Action |
-|---------|--------|--------------|--------------|
-|Wrong address |Address does not match phone in DB |Inform caller: 'The address does not match. Please try again with your full service address including area and city.' |System ActionIncrement auth_fail_count. Re-collect address |
-|Phone not found |Phone number not in mock DB |Inform caller: 'I could not find an account with that number. Please check and try again.' |Increment auth_fail_count. Re-collect phone + address |
-|Third failure |auth_fail_count reaches 3 |Inform: 'I was unable to verify your account. Let me connect you with an agent.' |Transfer to Escalation Agent. Session summary passed. |
-|Caller hangs up during auth |No input during phone/address collection |Three-strike no-input handler fires: 'I have not heard a response. Thank you for calling. Goodbye.' |End session gracefully |
+#### Agent Response
+"I am currently unable to retrieve route information. Please try again shortly."
 
+#### Resolution
+|Condition|	Action|
+|---------|-------|
+|Retry Successful	|Continue|
+|Retry Failed|	Inform User|
+|Repeated Failure	|Human Agent|
 
-### API Timeout and Failure 
-|Scenario |Agent Affected  |Bot Behaviour |System Action |
-|---------|--------|--------------|--------------|
-|validateAddress times out |Authentication Agent |'I am experiencing a technical issue. Please hold while I connect you.'  |Escalate immediately — cannot authenticate without API  |
-|reportMissedPickup fails |Missed Pickup Agent  |'I am sorry, I was unable to log your complaint right now. Let me connect you with an agent who can help.'  |Retry once, then escalate with reason=api_failure  |
-|reschedulePickup fails |Reschedule Agent |'I was unable to update your schedule. Let me connect you with our team.'  |Escalate — do not auto-retry reschedule (risk of double booking)  |
-|createServiceRequest fails (complaint) |Complaint Agent  |'I sincerely apologize. Let me connect you immediately with a senior agent.'  |Escalate immediately — never retry on frustrated caller |
-
-
-### No-Match and No-Input
-|Strike |No-Input Response  |No-Match Response |
-|---------|--------|--------------|
-|Strike 1  |'I did not hear anything. Could you please repeat that?' |'I did not quite catch that. I can help with missed pickups, rescheduling, service status, route delays, container issues, and complaints.'  |
-|Strike 2 |'Are you still there? Please say what you need help with — for example: missed pickup, or service status.'  |'Could you say one of the following: missed pickup, reschedule, check status, or complaint?' |
-|Strike 3 |'I have not heard a response. Thank you for calling Waste Management Services. Goodbye.' |'I am having difficulty understanding your request. Would you like me to connect you with a live agent?'|
+### 4. Invalid Reschedule Requests
+#### No Available Pickup Slots
+##### Scenario:
+All pickup slots for the request date are fully booked.
+Callback: checkAvailavility()
+#### Action : Suggest next available date.
 
 
-### Invalid Date in Reschedule
-* Caller says a date in the past: 'Reschedule to last Monday' 
-
-* Bot response: 'I am sorry, I can only reschedule to a future date. Could you please provide a date that is today or later?' 
-
-* Caller says an ambiguous date: 'Next week sometime' 
-
-* Bot response: 'Which day next week would you prefer? For example, Monday, Tuesday, or Wednesday?' 
-* Bot response: 'The date you selected falls on a public holiday when we do not operate. The next available date is [date]. Shall I reschedule to that date instead?'
-
-
-### Holiday Scheduling Edge Case 
-
-* Caller requests reschedule to a national holiday 
-
-* Bot checks holiday calendar, informs caller, offers next available weekday 
-
-* System auto-suggests next available date
-
-
-### Out-of-Scope Requests 
-
-* Caller asks about billing, payments, account creation, contract changes 
-
-* Bot response: 'I can only assist with waste management service queries such as missed pickups, rescheduling, status checks, and complaints. For account-related matters, let me connect you with our customer care team.' 
-
-* Route to Escalation Agent with reason=out_of_scope 
